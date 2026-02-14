@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Para ti...</title>
+    <style>
+        /* --- FUENTES --- */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@300;500&display=swap');
+
+        /* --- ESTILOS GENERALES --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom, #000408 0%, #010d1a 40%, #021628 100%);
+            color: #e6f1ff;
+            font-family: 'Playfair Display', serif;
+            text-align: center;
+            overflow-x: hidden;
+            overflow-y: hidden;
+            position: relative;
+            transition: background 2s ease;
+        }
+
+        body.illuminated {
+            background: linear-gradient(to bottom, #001122 0%, #012840 40%, #033d5c 100%);
+        }
+
+        /* --- CANVAS PARA PARTÍCULAS --- */
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* --- ESTRELLAS DE FONDO CON PARALLAX --- */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background-image:
+                radial-gradient(1px 1px at 20px 30px, #eee, rgba(0, 0, 0, 0)),
+                radial-gradient(1.5px 1.5px at 70px 70px, #fff, rgba(0, 0, 0, 0)),
+                radial-gradient(1px 1px at 90px 40px, #ddd, rgba(0, 0, 0, 0)),
+                radial-gradient(2px 2px at 150px 80px, #fff, rgba(0, 0, 0, 0));
+            background-size: 200px 200px;
+            opacity: 0.6;
+            transition: transform 0.1s ease-out;
+        }
+
+        /* --- LUNA --- */
+        .moon {
+            position: fixed;
+            top: 12%;
+            right: 15%;
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle at 35% 35%, #ffffff, #ffe8b3);
+            border-radius: 50%;
+            box-shadow: 0 0 60px rgba(255, 232, 179, 0.6),
+                        0 0 100px rgba(255, 232, 179, 0.3);
+            z-index: 0;
+            opacity: 0;
+            animation: moonRise 3s ease-out 0.5s forwards;
+        }
+
+        @keyframes moonRise {
+            to { opacity: 0.95; }
+        }
+
+        @media (max-width: 768px) {
+            .moon {
+                width: 80px;
+                height: 80px;
+                top: 8%;
+                right: 10%;
+            }
+        }
+
+        /* --- REFLEJO DE LUNA EN EL AGUA --- */
+        .moon-reflection {
+            position: fixed;
+            bottom: 20%;
+            right: 15%;
+            width: 100px;
+            height: 200px;
+            background: linear-gradient(to bottom, 
+                rgba(255, 232, 179, 0) 0%,
+                rgba(255, 232, 179, 0.15) 30%,
+                rgba(255, 232, 179, 0.08) 70%,
+                rgba(255, 232, 179, 0) 100%);
+            filter: blur(20px);
+            z-index: 0;
+            opacity: 0;
+            animation: reflectionGlow 4s ease-in-out infinite alternate, moonRise 3s ease-out 1s forwards;
+            transform-origin: top center;
+        }
+
+        @keyframes reflectionGlow {
+            0% { opacity: 0.3; transform: scaleY(1); }
+            100% { opacity: 0.5; transform: scaleY(1.1); }
+        }
+
+        /* --- CAPAS DE ESPUMA BIOLUMINISCENTE --- */
+        .foam-layer {
+            position: fixed;
+            left: -20%;
+            width: 140%;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .foam-layer-1 {
+            bottom: -30px;
+            height: 120px;
+            background: rgba(0, 243, 255, 0.12);
+            border-top-left-radius: 50% 100%;
+            border-top-right-radius: 50% 100%;
+            filter: blur(20px);
+            box-shadow: 0 -10px 40px rgba(0, 243, 255, 0.4), inset 0 20px 30px rgba(0, 243, 255, 0.25);
+            animation: tide1 6s infinite ease-in-out alternate;
+        }
+
+        .foam-layer-2 {
+            bottom: -20px;
+            height: 100px;
+            background: rgba(0, 220, 255, 0.1);
+            border-top-left-radius: 60% 120%;
+            border-top-right-radius: 60% 120%;
+            filter: blur(15px);
+            box-shadow: 0 -15px 35px rgba(0, 220, 255, 0.5);
+            animation: tide2 7s infinite ease-in-out alternate 0.5s;
+        }
+
+        .foam-layer-3 {
+            bottom: -10px;
+            height: 80px;
+            background: rgba(100, 255, 255, 0.15);
+            border-top-left-radius: 55% 110%;
+            border-top-right-radius: 55% 110%;
+            filter: blur(10px);
+            box-shadow: 0 -20px 30px rgba(100, 255, 255, 0.6);
+            animation: tide3 8s infinite ease-in-out alternate 1s;
+        }
+
+        @keyframes tide1 {
+            0% {
+                transform: translateY(25px) scaleY(0.9);
+                opacity: 0.5;
+            }
+            100% {
+                transform: translateY(-8px) scaleY(1.15);
+                opacity: 0.85;
+            }
+        }
+
+        @keyframes tide2 {
+            0% {
+                transform: translateY(20px) scaleY(0.85);
+                opacity: 0.45;
+            }
+            100% {
+                transform: translateY(-12px) scaleY(1.2);
+                opacity: 0.8;
+            }
+        }
+
+        @keyframes tide3 {
+            0% {
+                transform: translateY(15px) scaleY(0.8);
+                opacity: 0.4;
+            }
+            100% {
+                transform: translateY(-15px) scaleY(1.25);
+                opacity: 0.9;
+            }
+        }
+
+        /* --- TEXTURA DE ARENA --- */
+        .sand-texture {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(to top, rgba(20, 30, 40, 0.3) 0%, transparent 100%);
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        /* --- PALMERAS EN SILUETA --- */
+        .palm-tree {
+            position: fixed;
+            bottom: 0;
+            z-index: 3;
+            opacity: 0;
+            animation: palmFadeIn 2s ease-out 2s forwards;
+        }
+
+        @keyframes palmFadeIn {
+            to { opacity: 1.5; }
+        }
+
+        .palm-left {
+            left: -50px;
+            width: 200px;
+            height: 350px;
+            transform-origin: bottom center;
+            animation: palmSway1 6s ease-in-out infinite, palmFadeIn 2s ease-out 2s forwards;
+        }
+
+        .palm-right {
+            right: -30px;
+            width: 180px;
+            height: 320px;
+            transform-origin: bottom center;
+            animation: palmSway2 7s ease-in-out infinite, palmFadeIn 2s ease-out 2.5s forwards;
+        }
+
+        @keyframes palmSway1 {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(2deg); }
+        }
+
+        @keyframes palmSway2 {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(-2.5deg); }
+        }
+
+        @media (max-width: 768px) {
+            .palm-left { width: 120px; height: 220px; left: -30px; }
+            .palm-right { width: 110px; height: 200px; right: -20px; }
+        }
+
+        /* --- NEBLINA MARINA --- */
+        .mist {
+            position: fixed;
+            bottom: 15%;
+            left: 0;
+            width: 100%;
+            height: 30%;
+            background: linear-gradient(to top,
+                rgba(10, 25, 40, 0) 0%,
+                rgba(10, 25, 40, 0.15) 50%,
+                rgba(10, 25, 40, 0) 100%);
+            filter: blur(30px);
+            z-index: 2;
+            pointer-events: none;
+            opacity: 0;
+            animation: mistFloat 12s ease-in-out infinite, mistFadeIn 3s ease-out 1.5s forwards;
+        }
+
+        @keyframes mistFloat {
+            0%, 100% { transform: translateX(0); opacity: 0.3; }
+            50% { transform: translateX(30px); opacity: 0.5; }
+        }
+
+        @keyframes mistFadeIn {
+            to { opacity: 1; }
+        }
+
+        /* --- CONCHAS BRILLANTES --- */
+        .shell {
+            position: fixed;
+            width: 6px;
+            height: 6px;
+            background: radial-gradient(circle, rgba(255, 230, 180, 0.8), rgba(200, 180, 150, 0.4));
+            border-radius: 50%;
+            z-index: 2;
+            pointer-events: none;
+            box-shadow: 0 0 8px rgba(255, 230, 180, 0.6);
+            animation: shellTwinkle 3s ease-in-out infinite;
+        }
+
+        @keyframes shellTwinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.9; transform: scale(1.3); }
+        }
+
+        /* --- ESTRELLA FUGAZ --- */
+        .shooting-star {
+            position: fixed;
+            width: 3px;
+            height: 3px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #fff, 0 0 15px #fff;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .shooting-star::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 3px;
+            width: 100px;
+            height: 2px;
+            background: linear-gradient(to right, rgba(255, 255, 255, 0.8), transparent);
+            transform: translateY(-50%);
+        }
+
+        /* --- PEZ BIOLUMINISCENTE --- */
+        .bio-fish {
+            position: fixed;
+            width: 30px;
+            height: 12px;
+            z-index: 4;
+            pointer-events: none;
+            filter: blur(1px);
+        }
+
+        .bio-fish::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 8px;
+            background: radial-gradient(ellipse, rgba(0, 255, 255, 0.6), rgba(0, 200, 255, 0.3), transparent);
+            border-radius: 50%;
+            box-shadow: 0 0 12px rgba(0, 255, 255, 0.8);
+        }
+
+        .bio-fish::after {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: 2px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid rgba(0, 220, 255, 0.4);
+            border-top: 4px solid transparent;
+            border-bottom: 4px solid transparent;
+        }
+
+        /* --- CHISPAS INTERACTIVAS --- */
+        .glow-trail {
+            position: fixed;
+            pointer-events: none;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 0 15px #00f3ff, 0 0 30px #00f3ff, 0 0 45px #008cff;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            animation: fadeTrail 1.2s forwards ease-out;
+        }
+
+        @keyframes fadeTrail {
+            0% {
+                width: 10px;
+                height: 10px;
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            100% {
+                width: 3px;
+                height: 3px;
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(5);
+            }
+        }
+
+        /* --- EXPLOSIÓN DE PARTÍCULAS --- */
+        .particle-burst {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: radial-gradient(circle, #00f3ff, #0088ff);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 20;
+            box-shadow: 0 0 10px #00f3ff;
+        }
+
+        /* --- PANTALLA INICIAL --- */
+        .intro {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Montserrat', sans-serif;
+            position: relative;
+            z-index: 100;
+            transition: opacity 1s ease;
+        }
+
+        .intro.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .intro h1 {
+            font-weight: 300;
+            letter-spacing: 6px;
+            font-size: 2.5rem;
+            margin-bottom: 50px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            animation: titleFadeIn 2s ease-out forwards;
+        }
+
+        @keyframes titleFadeIn {
+            to { opacity: 1; }
+        }
+
+        #start-btn {
+            background: transparent;
+            color: #00f3ff;
+            border: 2px solid #00f3ff;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 3px;
+            border-radius: 40px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.4), inset 0 0 15px rgba(0, 243, 255, 0.2);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            animation: btnFadeIn 2s ease-out 0.5s forwards;
+        }
+
+        @keyframes btnFadeIn {
+            to { opacity: 1; }
+        }
+
+        #start-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(0, 243, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        #start-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        #start-btn:hover {
+            background: rgba(0, 243, 255, 0.15);
+            box-shadow: 0 0 35px rgba(0, 243, 255, 0.7), inset 0 0 20px rgba(0, 243, 255, 0.4);
+            transform: scale(1.05);
+        }
+
+        #start-btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .scroll-indicator {
+            margin-top: 50px;
+            font-size: 0.85rem;
+            opacity: 0;
+            transition: opacity 1s ease;
+            animation: bounce 2.5s infinite;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-12px); }
+            60% { transform: translateY(-6px); }
+        }
+
+        /* --- ESTRUCTURA DEL POEMA CON PARALLAX --- */
+        .content-wrapper {
+            position: relative;
+            z-index: 10;
+            transform: translateZ(0);
+        }
+
+        .stanza {
+            min-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 35px;
+            font-size: 1.35rem;
+            line-height: 2;
+            opacity: 0;
+            transform: translateY(50px) scale(0.95);
+            transition: all 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .stanza.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .stanza p {
+            margin: 10px 0;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.9);
+            position: relative;
+        }
+
+        /* --- EFECTO SHIMMER EN PALABRAS CLAVE --- */
+        .shimmer {
+            position: relative;
+            display: inline-block;
+        }
+
+        .shimmer::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.3), 
+                transparent);
+            animation: shimmerEffect 3s infinite;
+        }
+
+        @keyframes shimmerEffect {
+            0% { left: -100%; }
+            50%, 100% { left: 100%; }
+        }
+
+        /* --- LA ESTROFA FINAL CON EXPLOSIÓN --- */
+        .final-stanza {
+            position: relative;
+        }
+
+        .final-stanza p {
+            color: #dcf3ff;
+            text-shadow: 0 0 18px rgba(0, 191, 255, 0.9), 
+                         0 0 35px rgba(0, 191, 255, 0.6), 
+                         0 0 55px rgba(0, 210, 255, 0.4), 
+                         0 4px 8px rgba(0, 0, 0, 0.9);
+            font-weight: 600;
+        }
+
+        .final-stanza.activated {
+            animation: finalPulse 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes finalPulse {
+            0% {
+                filter: brightness(1);
+            }
+            100% {
+                filter: brightness(1.15);
+            }
+        }
+
+        /* --- FIRMA --- */
+        .signature-box {
+            min-height: 40vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .signature {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.95rem;
+            opacity: 0.75;
+            letter-spacing: 2.5px;
+        }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 768px) {
+            .intro h1 { font-size: 1.8rem; }
+            #start-btn { font-size: 0.95rem; padding: 12px 30px; }
+            .stanza { font-size: 1.15rem; padding: 30px 25px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <audio id="ocean-audio" loop preload="auto">
+        <source src="mar.mp3" type="audio/mpeg">
+    </audio>
+
+    <canvas id="particle-canvas"></canvas>
+    <div class="stars"></div>
+    <div class="moon"></div>
+    <div class="moon-reflection"></div>
+    
+    <!-- Palmeras -->
+    <svg class="palm-tree palm-left" viewBox="0 0 200 350" fill="none">
+        <path d="M95 350 Q95 250, 100 150 T105 50" stroke="rgba(10,20,30,0.9)" stroke-width="8" fill="none"/>
+        <ellipse cx="105" cy="40" rx="60" ry="15" fill="rgba(10,25,30,0.8)" transform="rotate(-20 105 40)"/>
+        <ellipse cx="105" cy="45" rx="55" ry="14" fill="rgba(10,25,30,0.8)" transform="rotate(30 105 45)"/>
+        <ellipse cx="105" cy="38" rx="58" ry="13" fill="rgba(10,25,30,0.8)" transform="rotate(10 105 38)"/>
+        <ellipse cx="105" cy="50" rx="50" ry="12" fill="rgba(10,25,30,0.8)" transform="rotate(-40 105 50)"/>
+        <ellipse cx="105" cy="42" rx="52" ry="13" fill="rgba(10,25,30,0.8)" transform="rotate(50 105 42)"/>
+    </svg>
+
+    <svg class="palm-tree palm-right" viewBox="0 0 180 320" fill="none">
+        <path d="M85 320 Q88 240, 90 160 T92 45" stroke="rgba(10,20,30,0.9)" stroke-width="7" fill="none"/>
+        <ellipse cx="92" cy="38" rx="55" ry="13" fill="rgba(10,25,30,0.8)" transform="rotate(-25 92 38)"/>
+        <ellipse cx="92" cy="42" rx="50" ry="12" fill="rgba(10,25,30,0.8)" transform="rotate(25 92 42)"/>
+        <ellipse cx="92" cy="35" rx="53" ry="12" fill="rgba(10,25,30,0.8)" transform="rotate(5 92 35)"/>
+        <ellipse cx="92" cy="45" rx="48" ry="11" fill="rgba(10,25,30,0.8)" transform="rotate(-35 92 45)"/>
+        <ellipse cx="92" cy="40" rx="51" ry="12" fill="rgba(10,25,30,0.8)" transform="rotate(45 92 40)"/>
+    </svg>
+
+    <!-- Neblina -->
+    <div class="mist"></div>
+
+    <!-- Conchas brillantes -->
+    <div class="shell" style="bottom: 5%; left: 15%;"></div>
+    <div class="shell" style="bottom: 8%; left: 45%; animation-delay: 1s;"></div>
+    <div class="shell" style="bottom: 6%; left: 78%; animation-delay: 2s;"></div>
+    <div class="shell" style="bottom: 7%; left: 62%; animation-delay: 0.5s;"></div>
+    
+    <div class="foam-layer foam-layer-1"></div>
+    <div class="foam-layer foam-layer-2"></div>
+    <div class="foam-layer foam-layer-3"></div>
+    <div class="sand-texture"></div>
+
+    <div class="content-wrapper">
+        <div class="intro" id="intro-screen">
+            <h1>Para ti...</h1>
+            <button id="start-btn"><span>Sumergirse</span></button>
+            <div class="scroll-indicator" id="scroll-hint">Desliza suavemente ↓</div>
+        </div>
+
+        <div class="stanza">
+            <p>¿Y qué decir de ti?</p>
+            <p>A veces alegre, a veces frustrada,</p>
+            <p>siempre un <span class="shimmer">torbellino</span> de emociones...</p>
+            <p>que causan revuelos en mi mente.</p>
+        </div>
+
+        <div class="stanza">
+            <p>Eres un <span class="shimmer">enigma</span> andante;</p>
+            <p>y el ego que muestras,</p>
+            <p>es solo el velo que oculta</p>
+            <p>a la mujer que de verdad eres.</p>
+        </div>
+
+        <div class="stanza">
+            <p>No sé qué hay detrás de esos ojos,</p>
+            <p>ni qué secretos esconde ese corazón tuyo,</p>
+            <p>pero admiro tu forma de <span class="shimmer">resistir</span></p>
+            <p>cuando el mundo intenta detenerte.</p>
+        </div>
+
+        <div class="stanza">
+            <p>Me sorprende tu facilidad para acercarte a los demás,</p>
+            <p>y me atrapa tu esencia tan <span class="shimmer">cambiante</span>:</p>
+            <p>un instante arrogante, luego tierna... y de pronto, dulce.</p>
+        </div>
+
+        <div class="stanza">
+            <p>Puedo percibir la inconformidad de tu alma,</p>
+            <p>pero también la firmeza con la que te rehaces,</p>
+            <p>ese don tuyo de recuperar la claridad,</p>
+            <p>de volver a <span class="shimmer">sonreír y brillar</span></p>
+            <p>entre tanta adversidad.</p>
+        </div>
+
+        <div class="stanza">
+            <p>No te conozco del todo, lo sé...</p>
+            <p>pero veo tu amor por el <span class="shimmer">mar</span>, por los atardeceres,</p>
+            <p>y esa forma tan pura con la que miras a tu hermano.</p>
+        </div>
+
+        <div class="stanza final-stanza" id="final-stanza">
+            <p>Entonces intuyo lo que eres:</p>
+            <p>un <span class="shimmer">océano de olas indomables</span>.</p>
+            <p>Pero cuando la marea descansa,</p>
+            <p>tu agua se ilumina como un cielo sumergido.</p>
+            <br>
+            <p>Comprendo entonces que tu caos esconde algo precioso,</p>
+            <p>y es en esa <span class="shimmer">calma brillante</span> donde quiero navegar,</p>
+            <p>descubriendo todo lo que aún no me muestras.</p>
+        </div>
+
+        <div class="stanza signature-box">
+            <p class="signature">
+                By,<br>[Erick Gala]
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // ========================================
+        // VARIABLES GLOBALES
+        // ========================================
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        const startBtn = document.getElementById('start-btn');
+        const oceanAudio = document.getElementById('ocean-audio');
+        const scrollHint = document.getElementById('scroll-hint');
+        const introScreen = document.getElementById('intro-screen');
+        const finalStanza = document.getElementById('final-stanza');
+        const stars = document.querySelector('.stars');
+        
+        let width, height;
+        let particles = [];
+        let animationId;
+        let scrollY = 0;
+        let isMobile = window.innerWidth < 768;
+
+        // ========================================
+        // CONFIGURACIÓN DE CANVAS
+        // ========================================
+        function resizeCanvas() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            isMobile = width < 768;
+        }
+
+        // ========================================
+        // CLASE PARTÍCULA BIOLUMINISCENTE
+        // ========================================
+        class BioParticle {
+            constructor() {
+                this.reset();
+                this.y = Math.random() * height;
+                this.life = Math.random();
+            }
+
+            reset() {
+                this.x = Math.random() * width;
+                this.y = height * 0.5 + Math.random() * height * 0.5;
+                this.vx = (Math.random() - 0.5) * 0.8;
+                this.vy = (Math.random() - 0.5) * 0.4;
+                this.size = Math.random() * 2 + 0.5;
+                this.life = 1;
+                this.decay = 0.002 + Math.random() * 0.003;
+                this.pulseSpeed = 0.02 + Math.random() * 0.03;
+                this.pulseOffset = Math.random() * Math.PI * 2;
+                this.brightness = 0.4 + Math.random() * 0.6;
+            }
+
+            update(time) {
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                // Movimiento orgánico
+                const flowX = Math.sin(time * 0.0003 + this.y * 0.002) * 0.5;
+                const flowY = Math.cos(time * 0.0002 + this.x * 0.001) * 0.3;
+                this.x += flowX;
+                this.y += flowY;
+                
+                this.life -= this.decay;
+                
+                if (this.life <= 0 || this.x < -50 || this.x > width + 50 || this.y > height + 50) {
+                    this.reset();
+                }
+            }
+
+            draw(time, intensity = 1) {
+                const pulse = (Math.sin(time * this.pulseSpeed + this.pulseOffset) + 1) * 0.5;
+                const alpha = this.life * this.brightness * (0.5 + pulse * 0.5) * intensity;
+                
+                if (alpha < 0.05) return;
+                
+                // Resplandor exterior
+                const gradient1 = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 10);
+                gradient1.addColorStop(0, `rgba(100, 255, 255, ${alpha * 0.8})`);
+                gradient1.addColorStop(0.3, `rgba(0, 240, 255, ${alpha * 0.5})`);
+                gradient1.addColorStop(0.7, `rgba(0, 180, 220, ${alpha * 0.2})`);
+                gradient1.addColorStop(1, 'rgba(0, 120, 180, 0)');
+                
+                ctx.globalCompositeOperation = 'screen';
+                ctx.fillStyle = gradient1;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 10, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Núcleo
+                const gradient2 = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 2);
+                gradient2.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
+                gradient2.addColorStop(0.5, `rgba(150, 255, 255, ${alpha * 0.7})`);
+                gradient2.addColorStop(1, 'rgba(0, 200, 255, 0)');
+                
+                ctx.fillStyle = gradient2;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.globalCompositeOperation = 'source-over';
+            }
+        }
+
+        // ========================================
+        // INICIALIZACIÓN
+        // ========================================
+        function init() {
+            resizeCanvas();
+            
+            const particleCount = isMobile ? 150 : 300;
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new BioParticle());
+            }
+        }
+
+        // ========================================
+        // ANIMACIÓN DE PARTÍCULAS
+        // ========================================
+        let time = 0;
+        let particleIntensity = 1;
+
+        function animate() {
+            time++;
+            ctx.clearRect(0, 0, width, height);
+            
+            particles.forEach(p => {
+                p.update(time);
+                p.draw(time, particleIntensity);
+            });
+            
+            animationId = requestAnimationFrame(animate);
+        }
+
+        // ========================================
+        // BOTÓN INICIAL CON EFECTOS
+        // ========================================
+        startBtn.addEventListener('click', function() {
+            // Fade in del audio
+            oceanAudio.volume = 0;
+            let volumeInterval;
+            
+            oceanAudio.play().then(() => {
+                let currentVolume = 0;
+                volumeInterval = setInterval(() => {
+                    if (currentVolume < 1) {
+                        currentVolume += 0.08;
+                        oceanAudio.volume = Math.min(currentVolume, 1);
+                    } else {
+                        clearInterval(volumeInterval);
+                    }
+                }, 100);
+            }).catch(error => {
+                console.log("Audio bloqueado:", error);
+            });
+
+            // Animación de desaparición épica
+            startBtn.style.transform = 'scale(0.8)';
+            startBtn.style.opacity = '0';
+            
+            setTimeout(() => {
+                introScreen.classList.add('fade-out');
+                scrollHint.style.opacity = '0.7';
+                document.body.style.overflowY = 'auto';
+                
+                // Iniciar animación de partículas
+                animate();
+            }, 800);
+        });
+
+        // ========================================
+        // PARALLAX EN SCROLL
+        // ========================================
+        let ticking = false;
+
+        window.addEventListener('scroll', function() {
+            scrollY = window.scrollY;
+            
+            if (!ticking) {
+                window.requestAnimationFrame(function() {
+                    // Parallax de estrellas
+                    stars.style.transform = `translateY(${scrollY * 0.3}px)`;
+                    
+                    // Aumentar intensidad de partículas al bajar
+                    const scrollProgress = scrollY / (document.body.scrollHeight - window.innerHeight);
+                    particleIntensity = 1 + scrollProgress * 0.5;
+                    
+                    ticking = false;
+                });
+                
+                ticking = true;
+            }
+        });
+
+        // ========================================
+        // OBSERVADOR DE INTERSECCIÓN PARA ESTROFAS
+        // ========================================
+        const observerOptions = {
+            threshold: 0.3,
+            rootMargin: '0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    
+                    // Explosión de partículas al aparecer cada estrofa
+                    createBurst(entry.target);
+                    
+                    // Efecto especial en la estrofa final
+                    if (entry.target.id === 'final-stanza') {
+                        setTimeout(() => {
+                            entry.target.classList.add('activated');
+                            document.body.classList.add('illuminated');
+                            particleIntensity = 2;
+                            createMassiveBurst();
+                        }, 1000);
+                    }
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.stanza').forEach(stanza => {
+            observer.observe(stanza);
+        });
+
+        // ========================================
+        // EXPLOSIÓN DE PARTÍCULAS
+        // ========================================
+        function createBurst(element) {
+            const rect = element.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            const burstCount = isMobile ? 8 : 15;
+            
+            for (let i = 0; i < burstCount; i++) {
+                const angle = (Math.PI * 2 * i) / burstCount;
+                const velocity = 3 + Math.random() * 2;
+                const particle = document.createElement('div');
+                particle.className = 'particle-burst';
+                particle.style.left = centerX + 'px';
+                particle.style.top = centerY + 'px';
+                document.body.appendChild(particle);
+                
+                const vx = Math.cos(angle) * velocity;
+                const vy = Math.sin(angle) * velocity;
+                
+                animateBurst(particle, vx, vy);
+            }
+        }
+
+        function animateBurst(particle, vx, vy) {
+            let x = parseFloat(particle.style.left);
+            let y = parseFloat(particle.style.top);
+            let opacity = 1;
+            let size = 4;
+            
+            function update() {
+                x += vx;
+                y += vy;
+                opacity -= 0.02;
+                size -= 0.08;
+                
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.opacity = opacity;
+                particle.style.transform = `scale(${size / 4})`;
+                
+                if (opacity > 0 && size > 0) {
+                    requestAnimationFrame(update);
+                } else {
+                    particle.remove();
+                }
+            }
+            
+            update();
+        }
+
+        function createMassiveBurst() {
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const burstCount = isMobile ? 30 : 60;
+            
+            for (let i = 0; i < burstCount; i++) {
+                setTimeout(() => {
+                    const angle = Math.random() * Math.PI * 2;
+                    const velocity = 2 + Math.random() * 4;
+                    const particle = document.createElement('div');
+                    particle.className = 'particle-burst';
+                    particle.style.left = centerX + 'px';
+                    particle.style.top = centerY + 'px';
+                    document.body.appendChild(particle);
+                    
+                    const vx = Math.cos(angle) * velocity;
+                    const vy = Math.sin(angle) * velocity;
+                    
+                    animateBurst(particle, vx, vy);
+                }, i * 30);
+            }
+        }
+
+        // ========================================
+        // EFECTOS TÁCTILES
+        // ========================================
+        function createGlow(x, y) {
+            const glow = document.createElement('div');
+            glow.className = 'glow-trail';
+            glow.style.left = x + 'px';
+            glow.style.top = y + 'px';
+            document.body.appendChild(glow);
+            setTimeout(() => glow.remove(), 1200);
+        }
+
+        let lastTouch = 0;
+        document.addEventListener('touchmove', function(e) {
+            const now = Date.now();
+            if (now - lastTouch > 50) {
+                const touch = e.touches[0];
+                createGlow(touch.clientX, touch.clientY);
+                lastTouch = now;
+            }
+        });
+
+        let lastMouse = 0;
+        document.addEventListener('mousemove', function(e) {
+            const now = Date.now();
+            if (now - lastMouse > 100) {
+                createGlow(e.clientX, e.clientY);
+                lastMouse = now;
+            }
+        });
+
+        // ========================================
+        // ESTRELLAS FUGACES
+        // ========================================
+        function createShootingStar() {
+            const star = document.createElement('div');
+            star.className = 'shooting-star';
+            
+            // Posición inicial aleatoria en la parte superior
+            const startX = Math.random() * width * 0.8;
+            const startY = Math.random() * height * 0.3;
+            
+            star.style.left = startX + 'px';
+            star.style.top = startY + 'px';
+            document.body.appendChild(star);
+            
+            // Animación
+            let x = startX;
+            let y = startY;
+            const angle = Math.PI / 4 + (Math.random() - 0.5) * 0.3; // ~45 grados
+            const speed = 8 + Math.random() * 4;
+            const vx = Math.cos(angle) * speed;
+            const vy = Math.sin(angle) * speed;
+            let opacity = 1;
+            
+            function animateStar() {
+                x += vx;
+                y += vy;
+                opacity -= 0.015;
+                
+                star.style.left = x + 'px';
+                star.style.top = y + 'px';
+                star.style.opacity = opacity;
+                
+                if (opacity > 0 && x < width + 100 && y < height + 100) {
+                    requestAnimationFrame(animateStar);
+                } else {
+                    star.remove();
+                }
+            }
+            
+            animateStar();
+        }
+
+        // Crear estrella fugaz cada 45-60 segundos
+        function scheduleShootingStar() {
+            const delay = 5000 + Math.random() * 3000; // 45-60 segundos
+            setTimeout(() => {
+                createShootingStar();
+                scheduleShootingStar();
+            }, delay);
+        }
+
+        // Iniciar después de 10 segundos
+        setTimeout(scheduleShootingStar, 10000);
+
+        // ========================================
+        // PECES BIOLUMINISCENTES
+        // ========================================
+        function createBioFish() {
+            const fish = document.createElement('div');
+            fish.className = 'bio-fish';
+            
+            // Dirección: 60% de izq a der, 40% de der a izq
+            const leftToRight = Math.random() > 0.4;
+            const startX = leftToRight ? -50 : width + 50;
+            const startY = height * 0.6 + Math.random() * height * 0.3;
+            const endX = leftToRight ? width + 50 : -50;
+            
+            fish.style.left = startX + 'px';
+            fish.style.top = startY + 'px';
+            fish.style.transform = leftToRight ? 'scaleX(1)' : 'scaleX(-1)';
+            document.body.appendChild(fish);
+            
+            // Animación
+            const duration = 8000 + Math.random() * 4000; // 8-12 segundos
+            const startTime = Date.now();
+            
+            function animateFish() {
+                const elapsed = Date.now() - startTime;
+                const progress = elapsed / duration;
+                
+                if (progress < 1) {
+                    const x = startX + (endX - startX) * progress;
+                    const wave = Math.sin(progress * Math.PI * 6) * 15; // Movimiento ondulante
+                    const y = startY + wave;
+                    
+                    fish.style.left = x + 'px';
+                    fish.style.top = y + 'px';
+                    
+                    // Pulso de brillo
+                    const pulse = 0.6 + Math.sin(elapsed * 0.008) * 0.4;
+                    fish.style.opacity = pulse;
+                    
+                    requestAnimationFrame(animateFish);
+                } else {
+                    fish.remove();
+                }
+            }
+            
+            animateFish();
+        }
+
+        // Crear peces cada 15-25 segundos
+        function scheduleBioFish() {
+            const delay = 15000 + Math.random() * 10000; // 15-25 segundos
+            setTimeout(() => {
+                createBioFish();
+                scheduleBioFish();
+            }, delay);
+        }
+
+        // Iniciar después de 8 segundos
+        setTimeout(scheduleBioFish, 8000);
+
+        // ========================================
+        // INICIAR TODO
+        // ========================================
+        window.addEventListener('resize', resizeCanvas);
+        init();
+    </script>
+</body>
+</html>
